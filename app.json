@@ -5,8 +5,15 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
     "android": {
       "package": "com.cleanaudio.recorder",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      },
       "permissions": [
         "RECORD_AUDIO",
         "WRITE_EXTERNAL_STORAGE",
