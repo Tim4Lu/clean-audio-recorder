@@ -7,6 +7,8 @@ export default function App() {
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [lastAudioUri, setLastAudioUri] = useState(null);
+  const [sound, setSound] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const startRecording = async () => {
     try {
@@ -53,7 +55,7 @@ export default function App() {
 
       setRecording(newRecording);
       setIsRecording(true);
-      console.log('[AudioRecorder] Запис успішно розпочато!');
+      console.log('[AudioRecorder] Запис розпочато!');
     } catch (err) {
       console.error('[AudioRecorder] Помилка старту запису:', err);
     }
@@ -73,6 +75,33 @@ export default function App() {
       setRecording(null);
     } catch (err) {
       console.error('[AudioRecorder] Помилка зупинки запису:', err);
+    }
+  };
+
+  const playSound = async () => {
+    if (!lastAudioUri) return;
+
+    try {
+      if (sound) {
+        await sound.unloadAsync();
+      }
+
+      console.log('[AudioRecorder] Відтворення файлу:', lastAudioUri);
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: lastAudioUri },
+        { shouldPlay: true }
+      );
+
+      setSound(newSound);
+      setIsPlaying(true);
+
+      newSound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          setIsPlaying(false);
+        }
+      });
+    } catch (err) {
+      console.error('[AudioRecorder] Помилка відтворення:', err);
     }
   };
 
@@ -98,8 +127,12 @@ export default function App() {
 
       {lastAudioUri && (
         <View style={styles.resultContainer}>
-          <Text style={styles.resultLabel}>Останній файл:</Text>
-          <Text style={styles.resultUri}>{lastAudioUri}</Text>
+          <Text style={styles.resultLabel}>Останній запис збережено!</Text>
+          <TouchableOpacity style={styles.playButton} onPress={playSound}>
+            <Text style={styles.playButtonText}>
+              {isPlaying ? '▶️ ВІДТВОРЮЄТЬСЯ...' : '🔊 ПРОСЛУХАТИ ЗАПИС'}
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </SafeAreaView>
@@ -152,14 +185,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e293b',
     borderRadius: 8,
     width: '100%',
+    alignItems: 'center',
   },
   resultLabel: {
     color: '#64748b',
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 14,
+    marginBottom: 10,
   },
-  resultUri: {
-    color: '#38bdf8',
-    fontSize: 12,
+  playButton: {
+    backgroundColor: '#0284c7',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  playButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
